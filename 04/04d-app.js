@@ -49,41 +49,41 @@ app.get('readFile', (request, response) => {
             
         })
 
-        app.get('delete', (request, response) => {
-            let items = request.url.split("/");
+app.get('delete', (request, response) => {
+      let items = request.url.split("/");
             
-            if(statSync(items[1]) === 'deleteDirectory'){
-                rmdir(items[2], (error) => {
-                if(error){
-                    console.log("deletedirectory error");
+    if(statSync(items[1]) === 'deleteDirectory'){
+        rmdir(items[2], (error) => {
+         if(error){
+              console.log("deletedirectory error");
 
-                    response.writeHead(500);
-                    response.write("deletedirectory error");
-                }else{
-                    console.log("deletedirectory done");
+             response.writeHead(500);
+              response.write("deletedirectory error");
+        }else{
+            console.log("deletedirectory done");
 
-                    response.writeHead(200);
-                    response.write(items[2] + ' deleted');
-                }
-                response.end();
-            });
-            }else if (statSync(items[1]) === "deleteFile"){
-                unlink(items[2], (error) => {
-                    if(error){
-                        console.log("deleteFile error");
+            response.writeHead(200);
+            response.write(items[2] + ' deleted');
+        }
+        response.end();
+    });
+    }else if (statSync(items[1]) === "deleteFile"){
+        unlink(items[2], (error) => {
+            if(error){
+                console.log("deleteFile error");
 
-                        response.writeHead(500);
-                        response.write("deleteFile error");
-                    }else{
-                        console.log("deleteFile done");
+                response.writeHead(500);
+                response.write("deleteFile error");
+            }else{
+                console.log("deleteFile done");
 
-                        response.writeHead(200);
-                        response.write(items[2] + ' deleted');
-                    }
-                    response.end();
-                });
+                response.writeHead(200);
+                response.write(items[2] + ' deleted');
             }
+            response.end();
+        });
+    }
             
-        })
+})
 
 app.listen(80, () => {});
