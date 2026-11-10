@@ -72,15 +72,12 @@ app.get('delete', (request,response) => {
 
 app.get('CreateUser', (request, response) => {
     let items = request.url.split("/");
-    console.log("-------------");
     readFile('db.json', (error, filedata) => {
-        if(error){console.log("-------------", error);
         }
         else{
-            console.log("-------------", filedata);
             filedata = filedata.toString();
-            console.log("-------------", filedata);
             let newdata = filedata + request.data;
+            JSON.parse(newdata)
             console.log('newdata', newdata)
 
             writeFile('db.json', newdata, (error) => {
