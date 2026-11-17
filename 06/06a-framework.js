@@ -1,50 +1,40 @@
-import { createServer } from 'node:http';
-
-function framework(){
+import {createServer} from "http";
+function framework() {
     let controllers = []
-
-    return{
+    return {
         get: (path, func) => {
-            controllers.push({
-                name: path,
-                func: func
-            })
+            controllers.push({name: path, func: func});
         },
         listen: (port, callback) => {
-            function serverCallback(request, response){
-            console.log("------------------------");
-            console.log("url", request.url);
+            function serverCallback(req, res) {
+                let success = false;
+                let data = ""
+                req.on("data", (chunk) => {
+                    data += chunk;
+                })
+                req.on("end", () => {
+                    try {
+                        req.data = JSON.parse(data);
+                    } catch(err) {
+                        req.data = data
+                    }
+                    for(const controller of controllers)
+                        if (req.url.startsWith('/'+controller.name)) {
+                            controller.func(req, res);
+                            success = true;
+                            break;
+                        }
+                    if (!success) {
+                        res.writeHead(404);
+                        res.write("No such controller found.");
+                        res.end();
+                    }
 
-
-            let data = "";
-            request.on("data", (part) => {
-                data = data + part
-            });
-
-            request.on("end", () => {
-                request.data = JSON.parse(data);
-                console.log("data", data);
-                console.log("end");
-            
-
-            let found = false;
-            for(const controller of controllers){
-                if(request.url.startsWith('/' + controller.name)){
-                    found = true;
-                    controller.func(request, response);
-                    break;
-                }
+                })
             }
-            if(!found){
-                console.log("path not found.");
-            }
-        });
+            let server = createServer(serverCallback);
+            server.listen(port, callback);
         }
-
-        let server = createServer(serverCallback);
-
-        server.listen(port, callback);}
     }
 }
-
-export default framework
+export default framework;

@@ -1,49 +1,36 @@
 import { createServer } from 'node:http';
 
-function framework(){
-    let controllers = []
-
-    return{
-        get: (path, func) => {
+export default function framework(){
+    let controllers = [];
+    let app = {
+        get: function(path, func){
             controllers.push({
                 name: path,
                 func: func
             })
         },
-        listen: (port, callback) => {
+        listen: function(port, userCallback){
             function serverCallback(request, response){
-            console.log("------------------------");
-            console.log("url", request.url);
+                console.log("------------------------");
+                console.log("url: ", request.url);
 
+                let found = false;
 
-            let data = "";
-            request.on("data", function(part){
-                data = data = part
-            });
+                for(let item of controllers){
+                    if(request.url.startsWith('/' + item.name)){
+                        found = true;
+                        item.func(request, response);
+                        break;
+                    }
+                }
 
-            request.on("end", function(){
-                console.log("data", data);
-                console.log("end");
-            });
-            
-
-            let found = false;
-            for(const controller of controllers){
-                if(request.url.startsWith('/' + controller.name)){
-                    found = true;
-                    controller.func(request, response);
-                    break;
+                if(!found){
+                    console.log("path not found.");
                 }
             }
-            if(!found){
-                console.log("path not found.");
-            }
+            let server = createServer(serverCallback);
+            server.listen(port, userCallback);
         }
-
-        let server = createServer(serverCallback);
-
-        server.listen(port, callback);}
     }
+    return app;
 }
-
-export default framework

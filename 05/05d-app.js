@@ -1,106 +1,74 @@
-import { request } from "node:http";
 import framework from "./05b-framework.js";
-import { writeFile, readFile, unlink, rmdir, read } from "node:fs";
-const app = framework();
+import { unlink, writeFile, readFile } from 'node:fs';
 
-app.get('sum', (request, response) => {
-            let items = request.url.split("/");
-            response.writeHead(200);
-            response.write((Number(items[2]) + Number(items[3])).toString());
-            response.end();
-})
-
-app.get('createFile', (request, response) => {
-            let items = request.url.split("/");
-
-            writeFile(items[2], items[3], (error) => {
-                if(error){
-                    console.log("createFile error");
-
-                    response.writeHead(500);
-                    response.write("createFile error");
-                }else{
-                    console.log("createFile done");
-
-                    response.writeHead(200);
-                    response.write("createFile done");
-                }
-                response.end();
-            });
-            
-        })
-
-app.get('readFile', (request, response) => {
-            let items = request.url.split("/");
-
-            readFile(items[2], (error, body) => {
-                if(error){
-                    console.log("readFile error");
-
-                    response.writeHead(500);
-                    response.write("readFile error");
-                }else{
-                    console.log("readFile done");
-
-                    response.writeHead(200);
-                    response.write(body);
-                }
-                response.end();
-            });
-            
-        })
-
-app.get('delete', (request,response) => {
+let app = framework();
+let port = 3000;
+app.get("sum", function (request, response){
     let items = request.url.split("/");
+    response.writeHead(200);
+    response.write((Number(items[2]) + Number(items[3])).toString());
+    response.end();
+});
 
-    unlink(items[2], function(error){
-        if(error){
-            if(error.code === "EPERM"){
-                rmdir(items[2], function(error){
-                    if(error){
-                    }else{
-                    }
-                });
-            }
+app.get("delete", function (request, response){
+    let items = request.url.split("/");
+    response.writeHead(200);
+    unlink(items[2], function (err){
+        if(err){
+            console.log('error', err);
+            response.writeHead(500);
+            response.write("delete error");
+            response.end();
         }else{
+            console.log("delete done");
+
             response.writeHead(200);
-            response.write("delete complete");
+            response.write("delete done");
             response.end();
         }
     })
-})
+    response.end();
+});
 
-app.get('CreateUser', (request, response) => {
-    let items = request.url.split("/");
-    readFile('db.json', (error, filedata) => {
-        }
-        else{
-            filedata = filedata.toString();
-            let newdata = filedata + request.data;
-            JSON.parse(newdata)
-            console.log('newdata', newdata)
+app.get("signup", function (request, response) {
 
-            writeFile('db.json', newdata, (error) => {
-                if(error){
-                    console.log('error', error);
-        
+    console.log(request.data);
+    let users = "";
+
+    readFile("db.json", function(err, data){
+        if(err){
+            console.log('error', err);
+            response.writeHead(500);
+
+        }else{
+            console.log("readFile done");
+
+            response.writeHead(200);
+            users = data.toString() + request.data;
+            writeFile("db.json", users, function(err) {
+
+                if (err) {
+                    console.log('error', err);
+
                     response.writeHead(500);
-                    response.write('sign up error')
-                    response.end();
-                }
-                else{
-                    console.log("sign up done")
-                    
+                    response.end("createFile error");
+
+                } else {
+                    console.log("createFile done");
+
                     response.writeHead(200);
-                    response.write("sign up done")
-                    response.end();
+                    response.end("createFile done");
                 }
+
             });
         }
+
     });
-    
+
+
+
 });
 
-app.listen(80, () => {
-    console.log("server on")
-});
+app.listen(port, () => {
+    console.log(`app is running on port ${port}`)
+})
